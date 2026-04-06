@@ -13,7 +13,7 @@ const demoViewer =
   demoUsers.find((user) => user.role === "manager") ?? demoUsers[0];
 
 export function isAuthEnabled() {
-  return Boolean(process.env.DATABASE_URL);
+  return Boolean(process.env.PRISMA_DATABASE_URL || process.env.DATABASE_URL);
 }
 
 export const getServerAuthSession = cache(async () => {
@@ -47,6 +47,7 @@ export const getAppViewer = cache(async (): Promise<AppViewer> => {
       profile: {
         include: {
           team: true,
+          leader: true,
         },
       },
     },
@@ -67,13 +68,16 @@ export const getAppViewer = cache(async (): Promise<AppViewer> => {
     email: user.email ?? undefined,
     role: user.role,
     team: user.profile?.team?.name ?? "ยังไม่ระบุทีม",
+    teamId: user.profile?.teamId ?? undefined,
+    profileId: user.profile?.id ?? undefined,
+    leaderId: user.profile?.leaderId ?? undefined,
     status: user.status === "active" ? "active" : "inactive",
     phone: user.phone ?? user.profile?.phone ?? "-",
     bankName: user.profile?.bankName ?? undefined,
     bankAccountMasked: user.profile?.bankAccountNo
       ? `xxx-x-${user.profile.bankAccountNo.slice(-4)}`
       : undefined,
-    leaderName: undefined,
+    leaderName: user.profile?.leader?.name ?? undefined,
     position: user.profile?.positionTitle ?? user.role,
     isDemoMode: false,
   };

@@ -29,6 +29,9 @@ export type DemoUser = {
   email?: string;
   role: UserRole;
   team: string;
+  teamId?: string;
+  profileId?: string;
+  leaderId?: string;
   status: "active" | "inactive";
   phone: string;
   bankName?: string;

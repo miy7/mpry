@@ -48,15 +48,11 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        console.log("LOGIN_IDENTIFIER:", identifier);
-        console.log("FOUND_USER:", user?.username, user?.email, user?.status);
-
         if (!user?.passwordHash || user.status !== "active") {
           return null;
         }
 
         const valid = await compare(parsed.data.password, user.passwordHash);
-        console.log("PASSWORD_VALID:", valid);
 
         if (!valid) {
           return null;
