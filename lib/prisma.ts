@@ -9,10 +9,11 @@ const globalForPrisma = globalThis as unknown as {
 export function getPrisma() {
   if (globalForPrisma.prisma) return globalForPrisma.prisma;
 
-  const connectionString = process.env.DATABASE_URL;
+  const connectionString =
+    process.env.PRISMA_DATABASE_URL || process.env.DATABASE_URL;
 
   if (!connectionString) {
-    throw new Error("Missing DATABASE_URL");
+    throw new Error("Missing database connection string");
   }
 
   const pool = new Pool({

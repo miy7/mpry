@@ -10,8 +10,12 @@ const credentialsSchema = z.object({
   password: z.string().min(1, "กรุณากรอกรหัสผ่าน"),
 });
 
+const hasDatabase = Boolean(
+  process.env.PRISMA_DATABASE_URL || process.env.DATABASE_URL,
+);
+
 export const authOptions: NextAuthOptions = {
-  adapter: process.env.DATABASE_URL ? PrismaAdapter(getPrisma()) : undefined,
+  adapter: hasDatabase ? PrismaAdapter(getPrisma()) : undefined,
   session: {
     strategy: "jwt",
   },
@@ -33,20 +37,26 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const identifier = parsed.data.username.trim();
+
         const user = await prisma.user.findFirst({
           where: {
             OR: [
-              { username: parsed.data.username },
-              { email: parsed.data.username.toLowerCase() },
+              { username: identifier },
+              { email: identifier.toLowerCase() },
             ],
           },
         });
+
+        console.log("LOGIN_IDENTIFIER:", identifier);
+        console.log("FOUND_USER:", user?.username, user?.email, user?.status);
 
         if (!user?.passwordHash || user.status !== "active") {
           return null;
         }
 
         const valid = await compare(parsed.data.password, user.passwordHash);
+        console.log("PASSWORD_VALID:", valid);
 
         if (!valid) {
           return null;
@@ -83,7 +93,7 @@ export const authOptions: NextAuthOptions = {
   },
   events: {
     async signIn({ user }) {
-      if (!user.id || !process.env.DATABASE_URL) {
+      if (!user.id || !hasDatabase) {
         return;
       }
 
